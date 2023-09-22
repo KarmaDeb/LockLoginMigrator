@@ -65,6 +65,10 @@
       }
     },
     "migration": {
+      "geyser": {
+        "removePrefix": true,
+        "prefix": "*"
+      },
       "hex2base": true,
       "raw2base": true,
       "ignoreEmpty": true

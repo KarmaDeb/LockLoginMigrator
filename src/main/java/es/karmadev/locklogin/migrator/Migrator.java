@@ -38,8 +38,6 @@ public class Migrator {
     @SuppressWarnings("FieldMayBeFinal")
     private String destination = "output";
 
-    private HikariDataSource dataSource;
-
     /**
      * Start the migration
      */
@@ -50,7 +48,9 @@ public class Migrator {
         if (type == 1 && source == null) {
             throw new IOException("Cannot proceed with migration, database type is sqlite but no source file was provided");
         }
-        source = source.replaceAll("\\\\", "/");
+        if (source != null) {
+            source = source.replaceAll("\\\\", "/");
+        }
 
         Database database = configuration.getDatabase();
 
@@ -68,6 +68,7 @@ public class Migrator {
         if (type == 0) {
             System.out.printf("Preparing to connect to %s:%d@%s, [user: %s] using password (%b)%n", host, port, name, user, !pass.isEmpty());
 
+            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
             config.setJdbcUrl(
                     String.format(
                             "jdbc:mysql://%s:%d/%s?useSSL=%b?verifyServerCertificate=%b",
@@ -102,7 +103,7 @@ public class Migrator {
             config.setJdbcUrl("jdbc:sqlite:" + databaseFile.toAbsolutePath());
         }
 
-        dataSource = new HikariDataSource(config);
+        HikariDataSource dataSource = new HikariDataSource(config);
         System.out.println("Fetching tables, please wait...");
 
         boolean userTableFound = false;
