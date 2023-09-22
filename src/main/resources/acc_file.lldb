@@ -1,0 +1,23 @@
+("main"
+
+    */The player name
+    'player' -> "%name%"
+
+    */The player UUID
+    'uuid' -> "%uniqueid%"
+
+    */The player password
+    'password' -> "%password%"
+
+    */The player google auth token
+    'token' -> ""
+
+    */The player pin
+    'pin' -> ""
+
+    */The player google auth status
+    '2fa' -> false
+
+    */The player panic token
+    'panic' -> ""
+)

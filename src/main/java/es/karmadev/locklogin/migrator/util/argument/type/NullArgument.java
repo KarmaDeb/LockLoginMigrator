@@ -1,5 +1,6 @@
 package es.karmadev.locklogin.migrator.util.argument.type;
 
+import es.karmadev.locklogin.migrator.util.NullObject;
 import es.karmadev.locklogin.migrator.util.argument.AbstractArgument;
 import es.karmadev.locklogin.migrator.util.argument.ClassArgument;
 
@@ -10,7 +11,7 @@ import java.util.Optional;
 /**
  * Represents an argument
  */
-public class StringArgument extends AbstractArgument<String> {
+public class NullArgument extends AbstractArgument<Object> {
 
     /**
      * Initialize the argument
@@ -19,7 +20,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param description the argument description
      * @param help        the argument help message
      */
-    StringArgument(final String key, final String description, final String help) {
+    NullArgument(final String key, final String description, final String help) {
         this(key, description, help, false);
     }
 
@@ -31,8 +32,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param help        the argument help message
      * @param isSwitch    the argument switch status
      */
-    StringArgument(final String key, final String description, final String help, final boolean isSwitch) {
-        super(key, description, help, isSwitch, String.class);
+    NullArgument(final String key, final String description, final String help, final boolean isSwitch) {
+        super(key, description, help, isSwitch, Object.class);
     }
 
     /**
@@ -42,8 +43,9 @@ public class StringArgument extends AbstractArgument<String> {
      * @return the typed value
      */
     @Override
-    public Optional<String> converse(final Object value) {
-        return Optional.ofNullable(String.valueOf(value));
+    public Optional<Object> converse(final Object value) {
+        if (value == null) return Optional.of(NullObject.getInstance());
+        return Optional.of(value);
     }
 
     /**
@@ -53,13 +55,24 @@ public class StringArgument extends AbstractArgument<String> {
      * @param instance the object instance in where
      *                 to put the argument
      * @param value    the value to map
+     * @param safe safely set the value, if true, the value
+     *             won't write if null
      */
     @Override
-    public void mapArgument(final Object instance, final String value) {
+    public void mapArgument(final Object instance, final Object value, final boolean safe) {
+        if (value == null && safe) return;
+
         Class<?> instanceClass = instance.getClass();
         for (Field field : instanceClass.getDeclaredFields()) {
-
             if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if (!field.getType().equals(Object.class)) continue;
+                /*
+                As everything in java extends object, we must check if the field
+                explicitly needs an object (for which we also discard NullObject), as
+                providing the object with an existing object would mean that there's
+                a value, when there isn't
+                 */
+
                 if (field.isAnnotationPresent(ClassArgument.class)) {
                     ClassArgument argument = field.getAnnotation(ClassArgument.class);
                     if (argument.name().equals(key)) {
@@ -79,7 +92,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param key the key
      * @return the argument
      */
-    public static StringArgument valueOf(final String key) {
+    public static NullArgument valueOf(final String key) {
         return valueOf(key, "", "", false);
     }
 
@@ -90,7 +103,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param description the description
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description) {
+    public static NullArgument valueOf(final String key, final String description) {
         return valueOf(key, description, "", false);
     }
 
@@ -102,7 +115,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param help the help message
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final String help) {
+    public static NullArgument valueOf(final String key, final String description, final String help) {
         return valueOf(key, description, help, false);
     }
 
@@ -113,7 +126,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final boolean isSwitch) {
+    public static NullArgument valueOf(final String key, final boolean isSwitch) {
         return valueOf(key, "", "", isSwitch);
     }
 
@@ -125,7 +138,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final boolean isSwitch) {
+    public static NullArgument valueOf(final String key, final String description, final boolean isSwitch) {
         return valueOf(key, description, "", isSwitch);
     }
 
@@ -138,7 +151,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final String help, final boolean isSwitch) {
-        return new StringArgument(key, description, help, isSwitch);
+    public static NullArgument valueOf(final String key, final String description, final String help, final boolean isSwitch) {
+        return new NullArgument(key, description, help, isSwitch);
     }
 }

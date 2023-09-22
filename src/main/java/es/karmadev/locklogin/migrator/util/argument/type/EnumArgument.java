@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * Represents an argument
  */
-public class StringArgument extends AbstractArgument<String> {
+public class EnumArgument<T extends Enum<?>> extends AbstractArgument<T> {
 
     /**
      * Initialize the argument
@@ -19,8 +19,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param description the argument description
      * @param help        the argument help message
      */
-    StringArgument(final String key, final String description, final String help) {
-        this(key, description, help, false);
+    EnumArgument(final String key, final String description, final String help, final Class<T> e) {
+        this(key, description, help, false, e);
     }
 
     /**
@@ -31,8 +31,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param help        the argument help message
      * @param isSwitch    the argument switch status
      */
-    StringArgument(final String key, final String description, final String help, final boolean isSwitch) {
-        super(key, description, help, isSwitch, String.class);
+    EnumArgument(final String key, final String description, final String help, final boolean isSwitch, final Class<T> e) {
+        super(key, description, help, isSwitch, e);
     }
 
     /**
@@ -42,8 +42,32 @@ public class StringArgument extends AbstractArgument<String> {
      * @return the typed value
      */
     @Override
-    public Optional<String> converse(final Object value) {
-        return Optional.ofNullable(String.valueOf(value));
+    public Optional<T> converse(final Object value) {
+        T v = null;
+        for (T constant : type.getEnumConstants()) {
+            if (constant.name().equalsIgnoreCase(String.valueOf(value))) {
+                v = constant;
+                break;
+            }
+
+            try {
+                int id = (int) value;
+                if (constant.ordinal() == id) {
+                    v = constant;
+                    break;
+                }
+            } catch (ClassCastException ex) {
+                try {
+                    int id = Integer.parseInt(String.valueOf(value));
+                    if (constant.ordinal() == id) {
+                        v = constant;
+                        break;
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        return Optional.ofNullable(v);
     }
 
     /**
@@ -53,12 +77,15 @@ public class StringArgument extends AbstractArgument<String> {
      * @param instance the object instance in where
      *                 to put the argument
      * @param value    the value to map
+     * @param safe safely set the value, if true, the value
+     *             won't write if null
      */
     @Override
-    public void mapArgument(final Object instance, final String value) {
+    public void mapArgument(final Object instance, final T value, final boolean safe) {
+        if (value == null && safe) return;
+
         Class<?> instanceClass = instance.getClass();
         for (Field field : instanceClass.getDeclaredFields()) {
-
             if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                 if (field.isAnnotationPresent(ClassArgument.class)) {
                     ClassArgument argument = field.getAnnotation(ClassArgument.class);
@@ -79,8 +106,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param key the key
      * @return the argument
      */
-    public static StringArgument valueOf(final String key) {
-        return valueOf(key, "", "", false);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key) {
+        return valueOf(clazz, key, "", "", false);
     }
 
     /**
@@ -90,8 +117,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param description the description
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description) {
-        return valueOf(key, description, "", false);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key, final String description) {
+        return valueOf(clazz, key, description, "", false);
     }
 
     /**
@@ -102,8 +129,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param help the help message
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final String help) {
-        return valueOf(key, description, help, false);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key, final String description, final String help) {
+        return valueOf(clazz, key, description, help, false);
     }
 
     /**
@@ -113,8 +140,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final boolean isSwitch) {
-        return valueOf(key, "", "", isSwitch);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key, final boolean isSwitch) {
+        return valueOf(clazz, key, "", "", isSwitch);
     }
 
     /**
@@ -125,8 +152,8 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final boolean isSwitch) {
-        return valueOf(key, description, "", isSwitch);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key, final String description, final boolean isSwitch) {
+        return valueOf(clazz, key, description, "", isSwitch);
     }
 
     /**
@@ -138,7 +165,7 @@ public class StringArgument extends AbstractArgument<String> {
      * @param isSwitch the switch status
      * @return the argument
      */
-    public static StringArgument valueOf(final String key, final String description, final String help, final boolean isSwitch) {
-        return new StringArgument(key, description, help, isSwitch);
+    public static <T extends Enum<?>> EnumArgument<T> valueOf(final Class<T> clazz, final String key, final String description, final String help, final boolean isSwitch) {
+        return new EnumArgument<>(key, description, help, isSwitch, clazz);
     }
 }

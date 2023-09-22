@@ -1,0 +1,73 @@
+{
+  "settings": {
+    "type": "mysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "root",
+    "ssl": false,
+    "certificates": false,
+    "password": "",
+    "database": {
+      "name": "database",
+      "tables": {
+        "user_table": {
+          "name": "table",
+          "columns": [
+            {
+              "name": "id",
+              "type": "primary",
+              "relation": null,
+              "enabled": true
+            },
+            {
+              "name": "player",
+              "type": "name",
+              "relation": null,
+              "enabled": true
+            },
+            {
+              "name": "uuid",
+              "type": "uniqueid",
+              "relation": null,
+              "enabled": false
+            },
+            {
+              "name": "account",
+              "type": "primary",
+              "relation": {
+                "column": "id"
+              },
+              "enabled": false
+            }
+          ]
+        },
+        "account_table": {
+          "name": "table",
+          "columns": [
+            {
+              "name": "id",
+              "type": "primary",
+              "relation": null,
+              "enabled": true
+            },
+            {
+              "name": "password",
+              "type": "password",
+              "enabled": true
+            },
+            {
+              "name": "salt",
+              "type": "salt",
+              "enabled": false
+            }
+          ]
+        }
+      }
+    },
+    "migration": {
+      "hex2base": true,
+      "raw2base": true,
+      "ignoreEmpty": true
+    }
+  }
+}

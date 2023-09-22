@@ -1,16 +1,17 @@
-package es.karmadev.locklogin.migrator.util.argument.type;
+package es.karmadev.locklogin.migrator.util.argument.type.numeric;
 
 import es.karmadev.locklogin.migrator.util.argument.AbstractArgument;
 import es.karmadev.locklogin.migrator.util.argument.ClassArgument;
+import es.karmadev.locklogin.migrator.util.argument.type.StringArgument;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 
 /**
- * Represents a string argument
+ * Represents an argument
  */
-public class DoubleArgument extends AbstractArgument<Boolean> {
+public class FloatArgument extends AbstractArgument<Float> {
 
     /**
      * Initialize the argument
@@ -19,8 +20,20 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @param description the argument description
      * @param help        the argument help message
      */
-    DoubleArgument(final String key, final String description, final String help) {
-        super(key, description, help, Boolean.class);
+    FloatArgument(final String key, final String description, final String help) {
+        this(key, description, help, false);
+    }
+
+    /**
+     * Initialize the argument
+     *
+     * @param key         the argument key
+     * @param description the argument description
+     * @param help        the argument help message
+     * @param isSwitch    the argument switch status
+     */
+    FloatArgument(final String key, final String description, final String help, final boolean isSwitch) {
+        super(key, description, help, isSwitch, Float.class);
     }
 
     /**
@@ -30,10 +43,10 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @return the typed value
      */
     @Override
-    public Optional<Boolean> converse(final Object value) {
-        Boolean v = null;
+    public Optional<Float> converse(final Object value) {
+        Float v = null;
         try {
-            v = (Boolean) value;
+            v = (Float) value;
         } catch (ClassCastException ignored) {}
 
         return Optional.ofNullable(v);
@@ -46,9 +59,13 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @param instance the object instance in where
      *                 to put the argument
      * @param value    the value to map
+     * @param safe safely set the value, if true, the value
+     *             won't write if null
      */
     @Override
-    public void mapArgument(final Object instance, final Boolean value) {
+    public void mapArgument(final Object instance, final Float value, final boolean safe) {
+        if (value == null && safe) return;
+
         Class<?> instanceClass = instance.getClass();
         for (Field field : instanceClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
@@ -71,8 +88,8 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @param key the key
      * @return the argument
      */
-    public static DoubleArgument valueOf(final String key) {
-        return valueOf(key, "", "");
+    public static FloatArgument valueOf(final String key) {
+        return valueOf(key, "", "", false);
     }
 
     /**
@@ -82,8 +99,8 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @param description the description
      * @return the argument
      */
-    public static DoubleArgument valueOf(final String key, final String description) {
-        return valueOf(key, description, "");
+    public static FloatArgument valueOf(final String key, final String description) {
+        return valueOf(key, description, "", false);
     }
 
     /**
@@ -94,7 +111,43 @@ public class DoubleArgument extends AbstractArgument<Boolean> {
      * @param help the help message
      * @return the argument
      */
-    public static DoubleArgument valueOf(final String key, final String description, final String help) {
-        return new DoubleArgument(key, description, help);
+    public static FloatArgument valueOf(final String key, final String description, final String help) {
+        return valueOf(key, description, help, false);
+    }
+
+    /**
+     * Create a new argument
+     *
+     * @param key the key
+     * @param isSwitch the switch status
+     * @return the argument
+     */
+    public static FloatArgument valueOf(final String key, final boolean isSwitch) {
+        return valueOf(key, "", "", isSwitch);
+    }
+
+    /**
+     * Create a new argument
+     *
+     * @param key the key
+     * @param description the description
+     * @param isSwitch the switch status
+     * @return the argument
+     */
+    public static FloatArgument valueOf(final String key, final String description, final boolean isSwitch) {
+        return valueOf(key, description, "", isSwitch);
+    }
+
+    /**
+     * Create a new argument
+     *
+     * @param key the key
+     * @param description the description
+     * @param help the help message
+     * @param isSwitch the switch status
+     * @return the argument
+     */
+    public static FloatArgument valueOf(final String key, final String description, final String help, final boolean isSwitch) {
+        return new FloatArgument(key, description, help, isSwitch);
     }
 }
